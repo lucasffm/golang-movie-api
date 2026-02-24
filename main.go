@@ -6,6 +6,7 @@ import (
 	"movie-api/models"
 	"movie-api/routes"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -22,7 +23,10 @@ func main() {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
-	router := routes.SetupRouter()
+	router := gin.Default()
+	routes.SetupMiddleware(router)
+	routes.SetupRoutes(router)
+
 	log.Println("Server running on port 8080")
 	if err := router.Run(":8080"); err != nil {
 		log.Fatal("Failed to start server:", err)

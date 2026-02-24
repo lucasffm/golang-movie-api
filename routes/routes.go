@@ -1,14 +1,13 @@
 package routes
 
 import (
+	"fmt"
 	"movie-api/handlers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
-	router := gin.Default()
-
+func SetupRoutes(router *gin.Engine) *gin.Engine {
 	api := router.Group("/api/v1")
 	{
 		movies := api.Group("/movies")
@@ -32,4 +31,15 @@ func SetupRouter() *gin.Engine {
 	}
 
 	return router
+}
+
+func SetupMiddleware(router *gin.Engine) {
+	fmt.Println("Setting up middleware")
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+
+	router.Use(func(c *gin.Context) {
+		fmt.Println("Passou pelo Middleware!!!!")
+		c.Next()
+	})
 }
