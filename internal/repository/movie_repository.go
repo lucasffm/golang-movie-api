@@ -4,18 +4,21 @@ import (
 	"errors"
 	"movie-api/internal/domain"
 
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
 type movieRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *zerolog.Logger
 }
 
-func NewMovieRepository(db *gorm.DB) domain.MovieRepository {
-	return &movieRepository{db: db}
+func NewMovieRepository(db *gorm.DB, logger *zerolog.Logger) domain.MovieRepository {
+	return &movieRepository{db: db, logger: logger}
 }
 
 func (r *movieRepository) FindAll() ([]domain.Movie, error) {
+	r.logger.Info().Msg("Finding all movies")
 	var movies []domain.Movie
 	err := r.db.Preload("Reviews").Find(&movies).Error
 	return movies, err

@@ -4,15 +4,17 @@ import (
 	"errors"
 	"movie-api/internal/domain"
 
+	"github.com/rs/zerolog"
 	"gorm.io/gorm"
 )
 
 type reviewRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *zerolog.Logger
 }
 
-func NewReviewRepository(db *gorm.DB) domain.ReviewRepository {
-	return &reviewRepository{db: db}
+func NewReviewRepository(db *gorm.DB, logger *zerolog.Logger) domain.ReviewRepository {
+	return &reviewRepository{db: db, logger: logger}
 }
 
 func (r *reviewRepository) FindAll() ([]domain.Review, error) {

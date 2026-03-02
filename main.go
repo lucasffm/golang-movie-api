@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"movie-api/config"
 	"movie-api/internal/domain"
 	"movie-api/internal/handler"
@@ -11,24 +10,31 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+
+	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using environment variables")
+		log.Error().Msg("No .env file found, using environment variables")
 	}
 
 	db, err := config.ConnectDatabase()
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Err(err).Msg("Failed to connect to database")
 	}
 
 	if err := domain.Migrate(db); err != nil {
-		log.Fatal("Failed to migrate database:", err)
+		log.Err(err).Msg("Failed to migrate database")
 	}
 
-	movieRepo := repository.NewMovieRepository(db)
-	reviewRepo := repository.NewReviewRepository(db)
+	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+
+	movieRepo := repository.NewMovieRepository(db, &logger)
+	reviewRepo := repository.NewReviewRepository(db, &logger)
 
 	movieUC := usecase.NewMovieUseCase(movieRepo)
 	reviewUC := usecase.NewReviewUseCase(reviewRepo, movieRepo)
@@ -39,8 +45,8 @@ func main() {
 	router := gin.Default()
 	routes.Setup(router, movieHandler, reviewHandler)
 
-	log.Println("Server running on port 8080")
+	log.Info().Msg("Server running on port 8080!!!!")
 	if err := router.Run(":8080"); err != nil {
-		log.Fatal("Failed to start server:", err)
+		log.Err(err).Msg("Failed to start server")
 	}
 }
