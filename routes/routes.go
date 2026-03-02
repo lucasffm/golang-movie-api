@@ -7,12 +7,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes(router *gin.Engine) *gin.Engine {
+func Setup(router *gin.Engine) *gin.Engine {
+	// Setup middlewares
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+
+	router.Use(func(c *gin.Context) {
+		fmt.Println("Passou pelo Middleware!!!!")
+		c.Next()
+	})
+
+	// Setup routes
 	api := router.Group("/api/v1")
 	{
 		movies := api.Group("/movies")
 		{
-			movies.GET("", handlers.GetMovies)
+			movies.GET(
+				"/",
+				gin.BasicAuth(gin.Accounts{
+					"admin": "admin",
+				}),
+				handlers.GetMovies,
+			)
 			movies.GET("/:id", handlers.GetMovie)
 			movies.POST("", handlers.CreateMovie)
 			movies.PUT("/:id", handlers.UpdateMovie)
@@ -22,7 +38,7 @@ func SetupRoutes(router *gin.Engine) *gin.Engine {
 
 		reviews := api.Group("/reviews")
 		{
-			reviews.GET("", handlers.GetReviews)
+			reviews.GET("/", handlers.GetReviews)
 			reviews.GET("/:id", handlers.GetReview)
 			reviews.POST("", handlers.CreateReview)
 			reviews.PUT("/:id", handlers.UpdateReview)
@@ -31,15 +47,4 @@ func SetupRoutes(router *gin.Engine) *gin.Engine {
 	}
 
 	return router
-}
-
-func SetupMiddleware(router *gin.Engine) {
-	fmt.Println("Setting up middleware")
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
-
-	router.Use(func(c *gin.Context) {
-		fmt.Println("Passou pelo Middleware!!!!")
-		c.Next()
-	})
 }

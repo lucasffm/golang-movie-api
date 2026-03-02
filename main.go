@@ -24,8 +24,7 @@ func main() {
 	}
 
 	router := gin.Default()
-	routes.SetupMiddleware(router)
-	routes.SetupRoutes(router)
+	routes.Setup(router)
 
 	log.Println("Server running on port 8080")
 	if err := router.Run(":8080"); err != nil {
