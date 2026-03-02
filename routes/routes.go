@@ -2,13 +2,12 @@ package routes
 
 import (
 	"fmt"
-	"movie-api/handlers"
+	"movie-api/internal/handler"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(router *gin.Engine) *gin.Engine {
-	// Setup middlewares
+func Setup(router *gin.Engine, movieHandler *handler.MovieHandler, reviewHandler *handler.ReviewHandler) {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
@@ -17,7 +16,6 @@ func Setup(router *gin.Engine) *gin.Engine {
 		c.Next()
 	})
 
-	// Setup routes
 	api := router.Group("/api/v1")
 	{
 		movies := api.Group("/movies")
@@ -27,24 +25,22 @@ func Setup(router *gin.Engine) *gin.Engine {
 				gin.BasicAuth(gin.Accounts{
 					"admin": "admin",
 				}),
-				handlers.GetMovies,
+				movieHandler.GetMovies,
 			)
-			movies.GET("/:id", handlers.GetMovie)
-			movies.POST("", handlers.CreateMovie)
-			movies.PUT("/:id", handlers.UpdateMovie)
-			movies.DELETE("/:id", handlers.DeleteMovie)
-			movies.GET("/:id/reviews", handlers.GetMovieReviews)
+			movies.GET("/:id", movieHandler.GetMovie)
+			movies.POST("", movieHandler.CreateMovie)
+			movies.PUT("/:id", movieHandler.UpdateMovie)
+			movies.DELETE("/:id", movieHandler.DeleteMovie)
+			movies.GET("/:id/reviews", reviewHandler.GetMovieReviews)
 		}
 
 		reviews := api.Group("/reviews")
 		{
-			reviews.GET("/", handlers.GetReviews)
-			reviews.GET("/:id", handlers.GetReview)
-			reviews.POST("", handlers.CreateReview)
-			reviews.PUT("/:id", handlers.UpdateReview)
-			reviews.DELETE("/:id", handlers.DeleteReview)
+			reviews.GET("/", reviewHandler.GetReviews)
+			reviews.GET("/:id", reviewHandler.GetReview)
+			reviews.POST("", reviewHandler.CreateReview)
+			reviews.PUT("/:id", reviewHandler.UpdateReview)
+			reviews.DELETE("/:id", reviewHandler.DeleteReview)
 		}
 	}
-
-	return router
 }
